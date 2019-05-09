@@ -25,3 +25,12 @@ Arguments       | Help
 ```
 python retrieve.py -store mystore.myshopify.com -api MY_API_KEY -p MY_PASS -start 2018-12-15 -end 2019-05-01
 ```
+
+# Output description
+
+Column          | Description
+-------------   | -------------
+name            | Name of order
+created_at      | Date of creation of the order
+
+...
