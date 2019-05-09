@@ -1,0 +1,1 @@
+python compta.py -store mystore.myshopify.com -api MY_API_KEY -p MY_PASS -start 2019-01-01 -end 2019-01-01
