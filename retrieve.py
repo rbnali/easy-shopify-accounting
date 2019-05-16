@@ -210,36 +210,36 @@ def run(STORE, API_KEY,PASSWORD, start_date = '2018-01-01', end_date = '2050-12-
                 'total_price', 'total_tax', 'total_weight', 'updated_at', 'user_id', 'payment_gateway_names']
 
     ### APPLY TO DATAFRAME
-    orders_1 = get_orders(STORE, API_KEY,PASSWORD, date_min = start_date, date_max = end_date)
-    orders_2 = orders_1[selected_col]
-    orders_3 = orders_2.apply(cleaning, axis = 1)
-    orders_3.dropna(inplace=True)
-    orders_4 = pd.DataFrame(list(orders_3))
-    orders_7 = orders_4.drop_duplicates(subset = ['name'], keep = 'last')
-    orders_8 = orders_7.sort_values('created_at', axis=0)
-    orders_9 = orders_8[orders_8['name'].isnull() == False]
-    orders_10 = orders_9.apply(add_vat, axis=1)
-    orders_11 = orders_10.apply(add_shipping, axis=1)
-    orders_11bis = orders_11.apply(add_total_before_taxes, axis=1)
-    orders_12 = orders_11bis.apply(add_payments, axis=1)
-    orders_13 = orders_12.apply(add_order_summary, axis=1)
+    orders = get_orders(STORE, API_KEY,PASSWORD, date_min = start_date, date_max = end_date)
+    orders = orders[selected_col]
+    orders = orders.apply(cleaning, axis = 1)
+    orders.dropna(inplace=True)
+    orders = pd.DataFrame(list(orders))
+    orders = orders.drop_duplicates(subset = ['name'], keep = 'last')
+    orders = orders.sort_values('created_at', axis=0)
+    orders = orders[orders['name'].isnull() == False]
+    orders = orders.apply(add_vat, axis=1)
+    orders = orders.apply(add_shipping, axis=1)
+    orders = orders.apply(add_total_before_taxes, axis=1)
+    orders = orders.apply(add_payments, axis=1)
+    orders = orders.apply(add_order_summary, axis=1)
 
     ### FORMATTING
-    orders_13['total_price'] = orders_13['total_price'].astype(float)
-    orders_13['total_discounts'] = orders_13['total_discounts'].astype(float)
-    orders_13['total_tax'] = orders_13['total_tax'].astype(float)
+    orders['total_price'] = orders['total_price'].astype(float)
+    orders['total_discounts'] = orders['total_discounts'].astype(float)
+    orders['total_tax'] = orders['total_tax'].astype(float)
 
     ### EXPORT
     general_cols = ['name', 'created_at', 'total_price', 'total_before_taxes', 'total_tax', 'shipping_before_taxes', 
                 'shipping_taxes','total_discounts', 'code', 'payment_method_0', 'payment_method_1', 'country_code', 
                 'first_name', 'last_name', 'address1', 'address2', 'company', 'city', 'zip', 'email', 'phone', 'order_summary']
-    tax_cols = [col for col in orders_13.columns if col[:4] == 'vat_']
-    price_cols = [col for col in orders_13.columns if col[:19] == 'price_before_taxes_']
+    tax_cols = [col for col in orders.columns if col[:4] == 'vat_']
+    price_cols = [col for col in orders.columns if col[:19] == 'price_before_taxes_']
     export_cols = general_cols + tax_cols + price_cols
 
-    export_cols = [col for col in export_cols if col in orders_13.columns]
+    export_cols = [col for col in export_cols if col in orders.columns]
     
-    orders_13[export_cols].to_excel('compta_github_' + start_date[:10] + '_' + end_date[:10] + '.xlsx', index=False)
+    return orders[export_cols]
 
 
 if __name__ == '__main__':
@@ -262,5 +262,9 @@ if __name__ == '__main__':
                     help='End date to retrieve orders. Example: 2019-01-01')
     args = parser.parse_args()
 
-    run(args.store, args.api, args.password, args.start, args.end)
+    # RUN
+    orders = run(args.store, args.api, args.password, args.start, args.end)
+
+    # SAVE
+    orders[export_cols].to_excel('compta_github_' + args.start[:10] + '_' + args.end[:10] + '.xlsx', index=False)
 
