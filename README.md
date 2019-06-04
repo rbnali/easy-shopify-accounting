@@ -3,7 +3,7 @@ Python script to retrieve an order summary and tax information from Shopify API 
 
 # Requirements
 
-You can install all the necesssary requirements with the following command:
+Please install all the necesssary requirements with the following command:
 
 ```
 pip install -r requirements.txt
