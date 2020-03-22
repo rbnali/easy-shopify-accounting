@@ -11,9 +11,11 @@ import time
 import argparse
 
 
-TODAY = datetime.date.today()
-FIRST = TODAY.replace(day=1)
-LAST_MONTH = FIRST - datetime.timedelta(days=1)
+SHOPIFY_CREDENTIALS = {
+    "SHOPIFY_ACCESS_TOKEN": os.environ.get("SHOPIFY_ACCESS_TOKEN"),
+    "SHOPIFY_PASSWORD": os.environ.get("SHOPIFY_PASSWORD"),
+    "SHOPIFY_STORE": os.environ.get("SHOPIFY_STORE")
+}
 
 
 def connect_shopify(api_key, password, store):
@@ -167,7 +169,6 @@ def add_payments(row):
         row['payment_method_' + str(i)] = payments[i]
     return row
 
-### ORDER CONTENT
 
 def add_order_summary(row):
     """Add order summary in str format."""
@@ -177,16 +178,17 @@ def add_order_summary(row):
     row['order_summary'] = row['order_summary'][:-3]
     return row
 
-### RUN CODE 
 
 def run(api_key, password, store, start_date = '2018-01-01', end_date = '2050-12-01'):
-    """Connects to shopify API and get all orders with accounting informations from 
-    start_date to end_date.
-    :param api_key: Your API key
-    :param password: You password
-    :param store: yourstore.shopify.com
-    :param date_min: min date of orders
-    :param date_max: max date of orders
+    """
+    Connects to shopify API and get all orders with accounting informations from start_date to end_date.
+
+    Args:
+        :api_key: Your API key
+        :password: You password
+        :store: https://yourstore.myshopify.com
+        :date_min: min date of orders
+        :date_max: max date of orders
     """
 
     # Reformat dates
@@ -225,17 +227,25 @@ def run(api_key, password, store, start_date = '2018-01-01', end_date = '2050-12
 
 
 if __name__ == '__main__':
+    # Initialize
+    TODAY = datetime.date.today()
+    FIRST = TODAY.replace(day=1)
+    LAST_MONTH = FIRST - datetime.timedelta(days=1)
     parser = argparse.ArgumentParser()
-    parser.add_argument('-store', action='store', dest='store', type=str,
-                    help='Your shopify store URL')
-    parser.add_argument('-api', action='store', dest='api', type=str,
-                    help='Your shopify API key')
-    parser.add_argument('-p', action='store', dest='password', type=str, 
-                    help='Your Shopify password')
     parser.add_argument('-start', action='store', dest='start', type=str, default = LAST_MONTH.strftime("%Y-%m-01"),
                     help='Start date to retrieve orders. Example: 2018-01-01')
     parser.add_argument('-end', action='store', dest='end', type=str, default = '2050-12-01',
                     help='End date to retrieve orders. Example: 2019-01-01')
     args = parser.parse_args()
-    orders = run(args.api, args.password, args.store, args.start, args.end)
+
+    # Get orers
+    orders = run(
+        SHOPIFY_CREDENTIALS["SHOPIFY_ACCESS_TOKEN"],
+        SHOPIFY_CREDENTIALS["SHOPIFY_PASSWORD"],
+        SHOPIFY_CREDENTIALS["SHOPIFY_STORE"],
+        args.start,
+        args.end
+    )
+
+    # Save to Excel
     orders.to_excel('compta_' + args.start[:10] + '_' + args.end[:10] + '.xlsx', index=False)
